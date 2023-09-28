@@ -10,7 +10,7 @@ public class Sniffer {
 		NameList names = NameList.readFromPath(NAMES_PATH);
 		if(names == null) return;
 		
-		names.updateNameOwners();
+		names.updateNames();
 		NameList.writeToPath(names, NAMES_PATH);
 	}
 	

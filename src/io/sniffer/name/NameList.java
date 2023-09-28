@@ -1,46 +1,61 @@
 package io.sniffer.name;
 
 import io.sniffer.mojang.MojangAPI;
+import io.sniffer.mojang.MojangPlayerProfile;
 import io.sniffer.mojang.MojangPlayerProfileList;
 import io.sniffer.util.file.FileUtil;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class NameList {
 	
+	private static final boolean OWNED_NAME_BANNED = false;
+	
 	private final List<Name> names = new ArrayList<>();
 	private final Map<String, Name> mappedNames = new HashMap<>();
 	
-	public void updateNameOwners() {
+	public void updateNames() {
 		synchronized(names) {
 			
 			int nameAmount = names.size();
 			int nameIndex = 0;
 			while(nameIndex < nameAmount) {
 				
+				List<Name> names = new ArrayList<>();
 				List<String> profileNames = new ArrayList<>();
 				int profileNameAmount = 0;
 				
 				while(nameIndex < nameAmount && profileNameAmount < MojangAPI.getMaximalPlayerProfileRequestAmount()) {
 					
-					Name name = getName(nameIndex);
+					Name name = this.names.get(nameIndex);
 					String n = name.getName();
 					
+					names.add(name);
 					profileNames.add(n);
 					profileNameAmount++;
 					nameIndex++;
 				}
 				
 				MojangPlayerProfileList profiles = MojangAPI.playerProfiles(profileNames);
-				profiles.forEachProfile((profile) -> {
+				
+				for(Name name : names) {
+					String n = name.getName();
 					
-					String profileName = profile.getName();
-					profileName = profileName.toLowerCase();
-					
-					Name name = mappedNames.get(profileName);
-					name.updateOwner(profile);
-				});
+					if(profiles.containsProfile(n)) {
+						
+						MojangPlayerProfile profile = profiles.getProfile(n);
+						name.update(profile, OWNED_NAME_BANNED);
+						
+					} else {
+						
+						boolean nameBanned = MojangAPI.playerProfileNameBanned(n);
+						name.update(MojangPlayerProfile.EMPTY, nameBanned);
+					}
+				}
 			}
 		}
 	}

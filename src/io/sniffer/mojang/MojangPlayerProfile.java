@@ -4,6 +4,11 @@ import java.util.UUID;
 
 public class MojangPlayerProfile {
 	
+	private static final UUID EMPTY_ID = null;
+	private static final String EMPTY_NAME = null;
+	
+	public static final MojangPlayerProfile EMPTY = new MojangPlayerProfile(EMPTY_ID, EMPTY_NAME);
+	
 	private final UUID id;
 	private final String name;
 	
@@ -28,7 +33,7 @@ public class MojangPlayerProfile {
 	}
 	
 	public boolean isEmpty() {
-		return id == null;
+		return id == EMPTY_ID;
 	}
 	
 }

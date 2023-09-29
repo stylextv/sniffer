@@ -12,8 +12,11 @@ import java.time.Duration;
 
 public class WebUtil {
 	
+	private static final String MISSING_REQUEST_HEADER = null;
 	private static final String MISSING_TEXT_PAYLOAD = null;
 	private static final boolean DEFAULT_RETRY_ON_EXCEPTION = true;
+	
+	private static final String REQUEST_HEADER_VALUE_SEPARATOR = ": ";
 	
 	private static final HttpClient CLIENT;
 	private static final Duration CLIENT_CONNECT_TIMEOUT_DURATION = Duration.ofSeconds(5);
@@ -45,10 +48,14 @@ public class WebUtil {
 	}
 	
 	public static String readTextFromPath(String path, String textPayload, boolean retryOnException) {
-		return readTextFromPath(path, textPayload, retryOnException, INITIAL_DEPTH);
+		return readTextFromPath(path, MISSING_REQUEST_HEADER, textPayload, retryOnException);
 	}
 	
-	public static String readTextFromPath(String path, String textPayload, boolean retryOnException, int depth) {
+	public static String readTextFromPath(String path, String requestHeader, String textPayload, boolean retryOnException) {
+		return readTextFromPath(path, requestHeader, textPayload, retryOnException, INITIAL_DEPTH);
+	}
+	
+	private static String readTextFromPath(String path, String requestHeader, String textPayload, boolean retryOnException, int depth) {
 		String text = null;
 		
 		try {
@@ -67,6 +74,7 @@ public class WebUtil {
 			URI uri = new URI(path);
 			
 			requestBuilder.uri(uri);
+			if(requestHeader != MISSING_REQUEST_HEADER) requestBuilder.headers(requestHeader.split(REQUEST_HEADER_VALUE_SEPARATOR));
 			requestBuilder.timeout(CLIENT_SEND_TIMEOUT_DURATION);
 			HttpRequest request = requestBuilder.build();
 			
@@ -95,7 +103,7 @@ public class WebUtil {
 				depth++;
 			}
 			
-			text = readTextFromPath(path, textPayload, retryOnException, depth);
+			text = readTextFromPath(path, requestHeader, textPayload, retryOnException, depth);
 		}
 		
 		return text;

@@ -2,35 +2,36 @@ package io.sniffer.mojang;
 
 import io.sniffer.mojang.requests.PlayerProfilesMojangRequest;
 import io.sniffer.mojang.responses.PlayerProfileMojangResponse;
+import io.sniffer.mojang.responses.PlayerProfileNameBannedMojangResponse;
 import io.sniffer.mojang.responses.PlayerProfilesMojangResponse;
 import io.sniffer.util.web.WebUtil;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 public class MojangAPI {
 	
-	private static final Set<String> BANNED_PLAYER_PROFILE_NAMES = new HashSet<>();
-	
+	private static final String PLAYER_PROFILE_NAME_BANNED_PATH_FORMAT = "https://api.minecraftservices.com/minecraft/profile/name/%s/available";
 	private static final String PLAYER_PROFILE_NAME_PATH_FORMAT = "https://api.mojang.com/users/profiles/minecraft/%s";
 	private static final String PLAYER_PROFILES_NAMES_PATH = "https://api.mojang.com/profiles/minecraft";
+	
+	private static final String AUTHORIZATION_REQUEST_HEADER;
+	private static final String MISSING_TEXT_PAYLOAD = null;
+	private static final boolean DEFAULT_RETRY_ON_EXCEPTION = true;
 	
 	private static final int MAXIMAL_PLAYER_PROFILE_REQUEST_AMOUNT = 10;
 	
 	static {
-		BANNED_PLAYER_PROFILE_NAMES.add("anus");
-		BANNED_PLAYER_PROFILE_NAMES.add("aryan");
-		BANNED_PLAYER_PROFILE_NAMES.add("autobiography");
-		BANNED_PLAYER_PROFILE_NAMES.add("bitch");
-		BANNED_PLAYER_PROFILE_NAMES.add("bondage");
-		BANNED_PLAYER_PROFILE_NAMES.add("cocaine");
-		BANNED_PLAYER_PROFILE_NAMES.add("cock");
-		BANNED_PLAYER_PROFILE_NAMES.add("consolidation");
-		BANNED_PLAYER_PROFILE_NAMES.add("consultations");
-		BANNED_PLAYER_PROFILE_NAMES.add("cum");
-		BANNED_PLAYER_PROFILE_NAMES.add("damn");
-		BANNED_PLAYER_PROFILE_NAMES.add("dick");
+		String key = "";
+		
+		AUTHORIZATION_REQUEST_HEADER = String.format("Authorization: Bearer %s", key);
+	}
+	
+	public static boolean playerProfileNameBanned(String name) {
+		String path = PLAYER_PROFILE_NAME_BANNED_PATH_FORMAT.formatted(name);
+		String textPayload = WebUtil.readTextFromPath(path, AUTHORIZATION_REQUEST_HEADER, MISSING_TEXT_PAYLOAD, DEFAULT_RETRY_ON_EXCEPTION);
+		
+		PlayerProfileNameBannedMojangResponse response = new PlayerProfileNameBannedMojangResponse(textPayload);
+		return response.isProfileNameBanned();
 	}
 	
 	public static MojangPlayerProfileList playerProfiles(Collection<String> names) {
@@ -54,12 +55,6 @@ public class MojangAPI {
 		
 		PlayerProfileMojangResponse response = new PlayerProfileMojangResponse(textPayload);
 		return response.asProfile();
-	}
-	
-	public static boolean playerProfileNameBanned(String name) {
-		name = name.toLowerCase();
-		
-		return BANNED_PLAYER_PROFILE_NAMES.contains(name);
 	}
 	
 	public static int getMaximalPlayerProfileRequestAmount() {

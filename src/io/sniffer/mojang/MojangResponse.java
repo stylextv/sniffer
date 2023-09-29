@@ -35,14 +35,15 @@ public class MojangResponse {
 	}
 	
 	public static String textPayloadValue(String textPayload, String valuePrefix, String valueSuffix) {
-		int index = textPayload.indexOf(valuePrefix) + valuePrefix.length();
-		
+		int index = textPayload.indexOf(valuePrefix);
 		if(index == INVALID_STRING_CHARACTER_INDEX) return null;
+		
+		index += valuePrefix.length();
 		textPayload = textPayload.substring(index);
 		
 		index = textPayload.indexOf(valueSuffix);
-		
 		if(index == INVALID_STRING_CHARACTER_INDEX) return null;
+		
 		return textPayload.substring(FIRST_STRING_CHARACTER_INDEX, index);
 	}
 	
